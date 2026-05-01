@@ -10,10 +10,6 @@ var canvasDraw; //store a drawing function here, gets redrawn on screen resize. 
 var promptState; //same thing for the prompt redraw. Still hacky bs
 
 
-function spit(){
-	console.log(boardState)
-}
-
 function rndGrid(n, p) {
     return Array.from({length: n}, () =>
         Array.from({length: n}, () => Math.random() < p ? 1 : 0)
@@ -26,8 +22,10 @@ function checkerboard(grid) {
     
     const nrows = grid.length
 	const ncols = grid[0].length
-    const tileW = canvas.width / ncols
-    const tileH = canvas.height / nrows
+    // const tileW = canvas.width / ncols
+    // const tileH = canvas.height / nrows
+const tileW = canvas.offsetWidth / ncols
+const tileH = canvas.offsetHeight / nrows
     
     for (let row = 0; row < nrows; row++) {
         for (let col = 0; col < ncols; col++) {
@@ -98,6 +96,4 @@ promptState = "Do the thing"
 window.addEventListener("resize", ()=>renderCanvas())
 
 renderCanvas()//Go!
-spit()
-
 //landingpage()
