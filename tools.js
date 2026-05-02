@@ -75,6 +75,29 @@ var bg = patternGetter(rndInit(bg_length,.5), bg_height, getRule(drawNumber(255,
 }
 
 //MAIN: run stuff
+export function makeMemoryTrial(gapcounter, matchstatus){
+const sidelen = 25; //hmmm how big should these be?
+ var patternList = drawNumber(255, 4) //target, foil1, foil2, foil3, no repeats
+var promptGrid = patternGetter(rndInit(sidelen,.5),sidelen, patternList[0])
+    var foil1 = patternGetter(rndInit(sidelen,.5),sidelen, patternList[1])
+    var foil2 = patternGetter(rndInit(sidelen,.5),sidelen, patternList[2])
+    var foil3 = patternGetter(rndInit(sidelen,.5),sidelen, patternList[3])
+    var target = matchstatus == "exact" ? promptGrid : patternGetter(rndInit(sidelen, .5),sidelen, patternList[0])
+return {
+        trialtype:"MEM",
+        gapcounter: gapcounter,
+        targpattern: patternList[0],
+        foil1_pattern:patternList[1],
+        foil2_pattern:patternList[2],
+        foil3_pattern:patternList[3],
+        promptGrid: promptGrid,
+        foil1: foil1,
+        foil2:foil2,
+        foil3:foil3,
+        target:target,
+        matchstatus:matchstatus
+    }
+}
 
 //A trial needs: label the bg and intruder. Pick an intruder location. Listen to the response. console log instead of save for now
 export function makeDetectionTrial(){
@@ -83,6 +106,7 @@ export function makeDetectionTrial(){
     const my_rulepair = drawNumber(255,2) //bans repeats: 2 distinct numbers
     const my_grid = getIntruderGrid(my_rulepair[0],my_rulepair[1],my_location)
  return {
+        trialtype:"DIS",
         bg:my_rulepair[0],
         intruder:my_rulepair[1],
         location:my_location,
