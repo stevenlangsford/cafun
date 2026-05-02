@@ -1,22 +1,3 @@
-function overlay(A, B, r_start, c_start) {
-    const result = A.map(row => [...row])
-    for (let r = 0; r < B.length; r++) {
-        for (let c = 0; c < B[r].length; c++) {
-            result[r_start + r][c_start + c] = B[r][c]
-        }
-    }
-    return result
-}
-
-const zeros10 = Array.from({length: 10}, () => Array(10).fill(0))
-const ones3 = Array.from({length: 3}, () => Array(3).fill(1))
-
-// top left
-const topLeft = overlay(zeros10, ones3, 0, 0)
-// bottom right
-const bottomRight = overlay(zeros10, ones3, 7, 7)
-
-//OLD STUFF
 function drawNumber(max, n) {
     const pool = Array.from({length: max + 1}, (_, i) => i)
     for (let i = pool.length - 1; i > 0; i--) {
@@ -67,7 +48,50 @@ function rndInit(n, p) {
     return Array.from({length: n}, () => Math.random() < p ? 1 : 0)
 }
 
-export const demoPattern = overlay(bottomRight, [[1,1,1],[1,1,1],[1,1,1]], 0,0)
+function overlay(A, B, r_start, c_start) {
+    const result = A.map(row => [...row])
+    for (let r = 0; r < B.length; r++) {
+        for (let c = 0; c < B[r].length; c++) {
+            result[r_start + r][c_start + c] = B[r][c]
+        }
+    }
+    return result
+}
+
+function getIntruderGrid(bg_pattern, intruder_pattern,intruder_location){
+    const sidelen = 25 //assuming square grids
+const quad_length = sidelen
+    const quad_height = sidelen
+    const bg_length = quad_length * 2
+    const bg_height = quad_height * 2
+
+var bg = patternGetter(rndInit(bg_length,.5), bg_height, getRule(drawNumber(255,1)[0]))
+    var intruder = patternGetter(rndInit(quad_length,.5),quad_height, getRule(drawNumber(255,1)[0]))
+
+    if(intruder_location=="UL") return(overlay(bg, intruder,0,0))
+    if(intruder_location=="UR") return(overlay(bg, intruder,0,quad_length))
+    if(intruder_location=="LL") return(overlay(bg, intruder,quad_height,0))
+    if(intruder_location=="LR") return(overlay(bg, intruder,quad_height,quad_length))
+}
+
+//MAIN: run stuff
+
+//A trial needs: label the bg and intruder. Pick an intruder location. Listen to the response. console log instead of save for now
+export function makeDetectionTrial(){
+
+    var my_location = ["UL","UR","LL","LR"][Math.floor(Math.random() * 4)]
+    const my_rulepair = drawNumber(255,2) //bans repeats: 2 distinct numbers
+    const my_grid = getIntruderGrid(my_rulepair[0],my_rulepair[1],my_location)
+ return {
+        bg:my_rulepair[0],
+        intruder:my_rulepair[1],
+        location:my_location,
+        grid:my_grid
+}
+}
+
+
+//export const demoPattern = demoIntruder//overlay(bottomRight, [[1,1,1],[1,1,1],[1,1,1]], 0,0)
 //overlay(topLeft,bottomRight,0,0)
 
 //patternGetter(rndInit(300,.5), 300, getRule(drawNumber(255,1)[0]))
