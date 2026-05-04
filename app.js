@@ -68,47 +68,33 @@ function renderCanvas() {
     canvasDraw()
 }
 
-function landingpage() {
-app.innerHTML = `
-    <h1>A landing page</h1>
-    <p>This doesn't have ethics approval, so continue at your own risk</p>
-    <p>One day when it's approved, there will be a consent form here</p>
-    <p>Here are some design decision points for you to try out:</p>
-    <ul>
-	    <li> Discrimination task: borders or no borders?</li>
-	    <li> Memory task: number of foils</li>
-    </ul>
-    <button onclick=taskpage()>Continue</button>
-`
-}
+
 
 function outropage(){
 app.innerHTML = "<h1> Thanks for participating!</h1>"
 }
-function taskpage(){
-app.innerHTML = `
-	<h1>LET'S TASK</h1>
-	`
-}
+//
 //LISTENERS:
 window.addEventListener("keydown", (e) => {
     if(listenerState == "detection_trial"){
     if (["q", "p", "z", "m"].includes(e.key)) {
-        console.log(`${e.key} was pressed`)
             var mytrial = alltrials[trial_index]
             mytrial.response = e.key
             mytrial.drawTime = drawTime //Make sure this is current! You're kinda unprotected here. Set by draw[type]Trial
             mytrial.responseTime = Date.now() //Pretty hacky timer, only ok if you believe system noise is small beer in the uncontrolled 'participate from home' environment. Which is probably true?
-            console.log(mytrial) //TODO, save this.
+            //SAVE THE RESPONSE
             trial_index = trial_index +1
             nextTrial()
+            return //always stop after nextTrial(), you're done until the next response
     }
     }
     if(listenerState == "memory_trial"){
-        console.log("mem response listener")
-        console.log(e.key)
+
+    if (["q", "p", "z", "m", " "].includes(e.key)) {
         trial_index = trial_index +1
         nextTrial()
+            return
+        }
     }
 })
 
@@ -154,11 +140,9 @@ memTrials.forEach((x) => {
   alltrials.push({ ...x, instance: 2 });
 });
 
-alltrials.push(Array.from({length: detection_n_intro_outro}, () => makeDetectionTrial()))
-//
+alltrials.push(... Array.from({length: detection_n_intro_outro}, () => makeDetectionTrial()))
 //Run the trials:
 var trial_index = 0; //which trial are you on now
-console.log(alltrials) //looks ok up to here.
 
 function nextTrial(){
  if(trial_index >= alltrials.length){
@@ -169,6 +153,7 @@ function nextTrial(){
     }
     console.log("You are in trial "+trial_index)
     var mytrial = alltrials[trial_index]
+    console.log(mytrial)
 
     if(mytrial.trialtype == "DIS"){
     boardState = alltrials[trial_index].grid
@@ -177,53 +162,45 @@ function nextTrial(){
         document.getElementById("overlay").style.display = "block" //corner response prompts
     }
     if(mytrial.trialtype == "MEM"){
-        boardState = alltrials[trial_index].promptGrid //ffs decide if you're camel or dash
+        if(mytrial.instance == 1){
+        boardState = mytrial.promptGrid //ffs decide if you're camel or dash
         listenerState = "memory_trial"
         promptState = "Remember this"
         document.getElementById("overlay").style.display = "none"
-        console.log("TODO, draw mem properly") //TODO: draw mem
+        }
+        if(mytrial.instance == 2){
+            promptState = "Which corner matches the pattern you're remembering?"
+            boardState = mytrial.recallGrid
+            listenerState = "memory_trial"
+            document.getElementById("overlay").style.display = "block"
+        }
     }
 
 drawTime = Date.now()
 
     canvasDraw = ()=> {checkerboard(boardState)}//Hacky bs! Breaks without this reset though.
 renderCanvas()
+
 if (!["DIS","MEM"].includes(mytrial.trialtype)){
+
         console.error("trialtype washout")
+        console.error(trial_index)
+        console.error(alltrials.length)
         console.error(mytrial)
     }
 }
 
+//goes last: everything else gets defined first.
+function landingpage() {
+        document.getElementById("overlay").style.display = "none"
+app.innerHTML = `
+    <h1>A landing page</h1>
+    <p>This doesn't have ethics approval, so continue at your own risk</p>
+    <p>One day when it's approved, there will be information and a consent form here</p>`
+const btn = document.createElement("button");
+btn.textContent = "Continue";
+btn.addEventListener("click", nextTrial);
 
- canvasDraw = 
-
-nextTrial()
-
-
-// function drawDetectionTrial(){
-//     console.log("you are in detection trial "+detection_index)
-//     drawTime = Date.now() //millis since 1970
-// if (detection_index >= detectionTrials.length){
-// console.log("All gone. No more")
-//         listenerState = "off" //THERE MIGHT BE MEMORY TRIALS LEFT, FIGURE OUT WHAT YOU'RE ACTUALLY DOING HERE.
-//         outropage() //there might be memory trials left, this is the detection index only
-// document.getElementById("overlay").style.display = "none" //turn off corner response prompts
-//         return
-//     }
-//     boardState = detectionTrials[detection_index].grid
-//     listenerState = "detection_trial" //activates eventListener
-//     promptState = "Which part is different?"
-// document.getElementById("overlay").style.display = "block" //corner response prompts
-//     //DOES NOT ADVANCE. Get the response listener to do that. 
-//
-//     renderCanvas()
-// }
-// //boardState = demoPattern
-// // boardState = rndGrid(500,.5)
-//
-// canvasDraw = ()=> {checkerboard(boardState)}
-// promptState = "Do the thing"
-// window.addEventListener("resize", ()=>renderCanvas())
-//
-// drawDetectionTrial()//GO!
-// //landingpage() //actual start point
+document.getElementById("app").appendChild(btn);
+}
+landingpage()//nextTrial()

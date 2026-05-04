@@ -1,3 +1,12 @@
+function shuffle(arr) { //ugh now there's two copies of this :-(
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+
 function drawNumber(max, n) {
     const pool = Array.from({length: max + 1}, (_, i) => i)
     for (let i = pool.length - 1; i > 0; i--) {
@@ -77,12 +86,22 @@ var bg = patternGetter(rndInit(bg_length,.5), bg_height, getRule(drawNumber(255,
 //MAIN: run stuff
 export function makeMemoryTrial(gapcounter, matchstatus){
 const sidelen = 25; //hmmm how big should these be?
- var patternList = drawNumber(255, 4) //target, foil1, foil2, foil3, no repeats
-var promptGrid = patternGetter(rndInit(sidelen,.5),sidelen, patternList[0])
-    var foil1 = patternGetter(rndInit(sidelen,.5),sidelen, patternList[1])
-    var foil2 = patternGetter(rndInit(sidelen,.5),sidelen, patternList[2])
-    var foil3 = patternGetter(rndInit(sidelen,.5),sidelen, patternList[3])
+ var patternList = drawNumber(255, 4) //target, foil1, foil2, foil3. no repeats.
+
+var promptGrid = patternGetter(rndInit(sidelen,.5),sidelen, getRule(patternList[0]))
+    var foil1 = patternGetter(rndInit(sidelen,.5),sidelen, getRule(patternList[1]))
+    var foil2 = patternGetter(rndInit(sidelen,.5),sidelen, getRule(patternList[2]))
+    var foil3 = patternGetter(rndInit(sidelen,.5),sidelen, getRule(patternList[3]))
     var target = matchstatus == "exact" ? promptGrid : patternGetter(rndInit(sidelen, .5),sidelen, patternList[0])
+
+var recall_locations = shuffle([[0,0],[sidelen,0],[0,sidelen],[sidelen,sidelen]]) //UL corners of four options.
+var recallGrid = patternGetter(rndInit(sidelen *2, .5), sidelen*2, getRule(0)) //blank white background
+    recallGrid = overlay(recallGrid, target, recall_locations[0][0], recall_locations[0][1])
+    recallGrid = overlay(recallGrid, foil1, recall_locations[1][0], recall_locations[1][1])
+    recallGrid = overlay(recallGrid, foil2, recall_locations[2][0], recall_locations[2][1])
+    recallGrid = overlay(recallGrid, foil3, recall_locations[3][0], recall_locations[3][1])
+
+
 return {
         trialtype:"MEM",
         gapcounter: gapcounter,
@@ -91,6 +110,7 @@ return {
         foil2_pattern:patternList[2],
         foil3_pattern:patternList[3],
         promptGrid: promptGrid,
+        recallGrid:recallGrid,
         foil1: foil1,
         foil2:foil2,
         foil3:foil3,
